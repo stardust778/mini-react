@@ -7,4 +7,4 @@ const element = (
   </div>
 )
 
-console.log(element, 'element')
+React.render(element, document.getElementById('root'));

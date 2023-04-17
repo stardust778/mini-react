@@ -1,7 +1,9 @@
 import createElement from './createElement';
+import render from './react-dom';
 
 const React = {
-  createElement
+  createElement,
+  render
 }
 
 export default React;

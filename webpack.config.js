@@ -1,4 +1,5 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
 
 module.exports = {
   entry: {
@@ -10,7 +11,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.js|jsx$/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -28,6 +29,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       title: 'mini-react',
+      template: path.join(__dirname, 'src/index.html')
     }),
   ],
 }
