@@ -148,7 +148,12 @@ function commitWork(fiber) {
   if (!fiber) {
     return
   }
-  const domParent = fiber.parent.dom
+  // const domParent = fiber.parent.dom
+  let domParentFiber = fiber.parent;
+  while (!domParentFiber.dom) {
+    domParentFiber = domParentFiber.parent;
+  }
+  const domParent = domParentFiber.dom;
   // 处理新增节点标记
   if (
     fiber.effectTag === "PLACEMENT" &&
@@ -157,7 +162,8 @@ function commitWork(fiber) {
     domParent.appendChild(fiber.dom);
     // 处理删除节点标记
   } else if (fiber.effectTag === "DELETION") {
-    domParent.removeChild(fiber.dom);
+    // domParent.removeChild(fiber.dom);
+    commitDeletion(fiber, domParent)
     // 处理更新属性
   } else if (
     fiber.effectTag === "UPDATE" &&
@@ -174,6 +180,14 @@ function commitWork(fiber) {
   commitWork(fiber.child);
   // 渲染兄弟节点
   commitWork(fiber.sibling);
+}
+
+function commitDeletion(fiber, domParent) {
+  if (fiber.dom) {
+    domParent.removeChild(fiber.dom);
+  } else {
+    commitDeletion(fiber.child, domParent);
+  }
 }
 
 /**
@@ -216,14 +230,23 @@ requestIdleCallback(workLoop);
 
 // 执行工作单元，返回下一个工作单元
 function performUnitWork(fiber) {
-  // 如果fiber上没有dom节点，为其创建一个
-  if (!fiber.dom) {
-    fiber.dom = createDom(fiber);
-  }
+  // // 如果fiber上没有dom节点，为其创建一个
+  // if (!fiber.dom) {
+  //   fiber.dom = createDom(fiber);
+  // }
 
-  // 获取到当前fiber的孩子节点
-  const elements = fiber.props.children;
-  reconcileChildren(fiber, elements);
+  // // 获取到当前fiber的孩子节点
+  // const elements = fiber.props.children;
+  // reconcileChildren(fiber, elements);
+
+  const isFunctionComponent = 
+    fiber.type instanceof Function;
+  
+  if (isFunctionComponent) {
+    updateFunctionComponent(fiber)
+  } else {
+    updateHostComponent(fiber);
+  }
 
   // 寻找下一个孩子节点，如果有返回
   if (fiber.child) {
@@ -238,6 +261,20 @@ function performUnitWork(fiber) {
     // 否则返回父节点
     nextFiber = nextFiber.parent;
   }
+}
+
+function updateFunctionComponent(fiber) {
+  const children = [fiber.type(fiber.props)];
+  console.log(fiber, 'fiber')
+  console.log(fiber.type, 'type')
+  reconcileChildren(fiber, children);
+}
+
+function updateHostComponent(fiber) {
+  if (!fiber.dom) {
+    fiber.dom = createDom(fiber);
+  }
+  reconcileChildren(fiber, fiber.props.children);
 }
 
 /**

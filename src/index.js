@@ -14,6 +14,12 @@ const render = value => {
   React.render(element, document.getElementById('root'));
 }
 
-render('world');
+// render('world');
+
+function App(props){
+  return <h1>H1,{props.name}!</h1>
+}
+
+React.render(<App name="foo"/>, document.getElementById('root'));
 
 
