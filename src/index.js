@@ -16,7 +16,7 @@ const render = value => {
 
 // render('world');
 
-function Counter() {
+function Counter1() {
   const [state, setState] = React.useState(1)
   return (
     <div>
@@ -28,7 +28,18 @@ function Counter() {
   )
 }
 
-React.render(<Counter />, document.getElementById('root'));
+class Counter2 extends React.Component {
+  render() {
+    return (
+      <div>
+        <h1>我是</h1>
+        <h2>class组件</h2>
+      </div>
+    )
+  }
+}
+
+React.render(<div><Counter1 /><Counter2 /></div>, document.getElementById('root'));
 
 
 

@@ -230,14 +230,19 @@ requestIdleCallback(workLoop);
 
 // 执行工作单元，返回下一个工作单元
 function performUnitWork(fiber) {
-  const isFunctionComponent = 
-    fiber.type instanceof Function;
-  
-  if (isFunctionComponent) {
-    updateFunctionComponent(fiber)
+  // const isFunctionComponent = 
+  //   fiber.type instanceof Function;
+  console.log(fiber.type, 'type')
+  if (fiber.type && typeof fiber.type === 'function') {
+    fiber.type.prototype.isReactComponent ? updateClassComponent(fiber) : updateFunctionComponent(fiber);
   } else {
     updateHostComponent(fiber);
   }
+  // if (isFunctionComponent) {
+  //   updateFunctionComponent(fiber)
+  // } else {
+  //   updateHostComponent(fiber);
+  // }
 
   // 寻找下一个孩子节点，如果有返回
   if (fiber.child) {
@@ -259,6 +264,9 @@ let wipFiber = null;
 // 当前hooks索引
 let hookIndex = null;
 
+/**
+ * 函数组件更新
+ * **/
 function updateFunctionComponent(fiber) {
   wipFiber = fiber;
   hookIndex = 0;
@@ -267,7 +275,14 @@ function updateFunctionComponent(fiber) {
   reconcileChildren(fiber, children);
 }
 
-
+/**
+ * 类组件更新呢
+ * **/
+function updateClassComponent(fiber) {
+  const { type, props } = fiber;
+  const children = [new type(props).render()];
+  reconcileChildren(fiber, children)
+}
 
 export function useState(initialState) {
   const oldHook = 
