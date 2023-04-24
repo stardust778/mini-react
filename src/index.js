@@ -16,10 +16,19 @@ const render = value => {
 
 // render('world');
 
-function App(props){
-  return <h1>H1,{props.name}!</h1>
+function Counter() {
+  const [state, setState] = React.useState(1)
+  return (
+    <div>
+      <h1 >
+          Count: {state}
+      </h1>
+      <button onClick={() => setState(c => c + 1)}>+1</button>
+    </div>
+  )
 }
 
-React.render(<App name="foo"/>, document.getElementById('root'));
+React.render(<Counter />, document.getElementById('root'));
+
 
 

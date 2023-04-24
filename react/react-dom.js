@@ -148,7 +148,7 @@ function commitWork(fiber) {
   if (!fiber) {
     return
   }
-  // const domParent = fiber.parent.dom
+
   let domParentFiber = fiber.parent;
   while (!domParentFiber.dom) {
     domParentFiber = domParentFiber.parent;
@@ -230,15 +230,6 @@ requestIdleCallback(workLoop);
 
 // 执行工作单元，返回下一个工作单元
 function performUnitWork(fiber) {
-  // // 如果fiber上没有dom节点，为其创建一个
-  // if (!fiber.dom) {
-  //   fiber.dom = createDom(fiber);
-  // }
-
-  // // 获取到当前fiber的孩子节点
-  // const elements = fiber.props.children;
-  // reconcileChildren(fiber, elements);
-
   const isFunctionComponent = 
     fiber.type instanceof Function;
   
@@ -263,11 +254,52 @@ function performUnitWork(fiber) {
   }
 }
 
+// 当前fiber节点
+let wipFiber = null;
+// 当前hooks索引
+let hookIndex = null;
+
 function updateFunctionComponent(fiber) {
+  wipFiber = fiber;
+  hookIndex = 0;
+  wipFiber.hooks = [];
   const children = [fiber.type(fiber.props)];
-  console.log(fiber, 'fiber')
-  console.log(fiber.type, 'type')
   reconcileChildren(fiber, children);
+}
+
+
+
+export function useState(initialState) {
+  const oldHook = 
+    wipFiber.alternate &&
+    wipFiber.alternate.hooks &&
+    wipFiber.alternate.hooks[hookIndex];
+  
+  const hook = {
+    state: oldHook ? oldHook.state : initialState,
+    queue: []
+  };
+
+  // 执行setState的action
+  const actions = (oldHook) ? oldHook.queue : [];
+  actions.forEach(action => {
+    hook.state = action(hook.state);
+  })
+
+  const setState = (action) => {
+    hook.queue.push(action);
+    wipRoot = {
+      dom: currentRoot.dom,
+      props: currentRoot.props,
+      alternate: currentRoot
+    };
+    nextUnitOfWork = wipRoot;
+    deletions = [];
+  }
+
+  wipFiber.hooks.push(hook);
+  hookIndex++;
+  return [hook.state, setState];
 }
 
 function updateHostComponent(fiber) {
